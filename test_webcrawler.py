@@ -46,9 +46,10 @@ class WebCrawlerTests(unittest.TestCase):
         crawler = WebCrawler()
         captured_output = io.StringIO()
         sys.stdout = captured_output
-
-        crawler.print_results(["https://test.com/result"])
-        sys.stdout = sys.__stdout__  # Reset
+        try:
+            crawler.print_results(["https://test.com/result"])
+        finally:
+            sys.stdout = sys.__stdout__  # Reset
 
         output = captured_output.getvalue()
         self.assertIn("Search results:", output)
