@@ -5,6 +5,8 @@ import requests
 import io
 import sys
 
+from main import WebCrawler
+
 class WebCrawlerTests(unittest.TestCase):
     @patch('requests.get')
     def test_crawl_success(self, mock_get):
@@ -54,6 +56,24 @@ class WebCrawlerTests(unittest.TestCase):
         output = captured_output.getvalue()
         self.assertIn("Search results:", output)
         self.assertIn("- https://test.com/result", output)
+
+    @patch('requests.get')
+    def test_crawl_avoids_duplicate_links(self, mock_get):
+        sample_html = '''
+        <html><body>
+            <a href="https://example.com/page"></a>
+            <a href="https://example.com/page/"></a>
+        </body></html>
+        '''
+        mock_response = MagicMock()
+        mock_response.text = sample_html
+        mock_get.return_value = mock_response
+
+        crawler = WebCrawler()
+        crawler.crawl("https://example.com")
+
+        # Both URLs normalize to the same, so visited should count just 2: root + one page
+        self.assertEqual(len(crawler.visited), 2)
 
 if __name__ == "__main__":
     unittest.main()

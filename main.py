@@ -1,7 +1,16 @@
 import requests
 from bs4 import BeautifulSoup
 from collections import defaultdict
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urlunparse
+
+def normalize_url(url):
+    parsed = urlparse(url)
+    normalized = parsed._replace(
+        scheme=parsed.scheme.lower(),
+        netloc=parsed.netloc.lower(),
+        path=parsed.path.rstrip('/')
+    )
+    return urlunparse(normalized)
 
 class WebCrawler:
     def __init__(self):
@@ -9,9 +18,10 @@ class WebCrawler:
         self.visited = set()
 
     def crawl(self, url, base_url=None):
-        if url in self.visited:
+        normalized_url = normalize_url(url)
+        if normalized_url in self.visited:
             return
-        self.visited.add(url)
+        self.visited.add(normalized_url)
 
         try:
             response = requests.get(url)
@@ -24,11 +34,13 @@ class WebCrawler:
                     if urlparse(href).netloc:
                         href = urljoin(base_url or url, href)
                     absolute_url = urljoin(base_url or url, href)
-                    if absolute_url not in self.visited and absolute_url.startswith(base_url or url):
-                        self.crawl(absolute_url, base_url=base_url or url)
+                    normalized_absolute_url = normalize_url(absolute_url)
+                    if normalized_absolute_url not in self.visited and normalized_absolute_url.startswith(base_url or url):
+                        self.crawl(normalized_absolute_url, base_url=base_url or url)
 
         except Exception as e:
             print(f"Error crawling {url}: {e}")
+
 
     def search(self, keyword):
         results = []
