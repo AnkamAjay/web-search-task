@@ -3,6 +3,12 @@ from bs4 import BeautifulSoup
 from collections import defaultdict
 from urllib.parse import urljoin, urlparse, urlunparse
 
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 def normalize_url(url):
     parsed = urlparse(url)
     normalized = parsed._replace(
@@ -39,7 +45,7 @@ class WebCrawler:
                         self.crawl(normalized_absolute_url, base_url=base_url or url)
 
         except Exception as e:
-            print(f"Error crawling {url}: {e}")
+            logger.error(f"Error crawling {url}: {e}")
 
 
     def search(self, keyword):
