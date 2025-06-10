@@ -23,8 +23,10 @@ class WebCrawler:
                 if href:
                     if urlparse(href).netloc:
                         href = urljoin(base_url or url, href)
-                    if not href.startswith(base_url or url):
-                        self.crawl(href, base_url=base_url or url)
+                    absolute_url = urljoin(base_url or url, href)
+                    if absolute_url not in self.visited and absolute_url.startswith(base_url or url):
+                        self.crawl(absolute_url, base_url=base_url or url)
+
         except Exception as e:
             print(f"Error crawling {url}: {e}")
 
